@@ -3,6 +3,8 @@ package com.viewstub.expandbutton;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.graphics.Rect;
+import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -53,9 +55,10 @@ public class ExpandButtonLayout extends RelativeLayout implements Animation.Anim
         vto2.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-
+                allHeight = getHeight();
+                initBackGround();
                 textViewWidth = mLinearLayout.getWidth();
-                Log.e("DEBUG", "Width=" + textViewWidth);
+                Log.e("DEBUG", "Width=" + textViewWidth + ",allHeight=" + allHeight);
                 savePaddingLeft = mLinearLayout.getPaddingLeft();
                 savePaddingRight = mLinearLayout.getPaddingRight();
                 ViewGroup.LayoutParams vglp = mLinearLayout.getLayoutParams();
@@ -79,6 +82,17 @@ public class ExpandButtonLayout extends RelativeLayout implements Animation.Anim
     private int saveMarginLeft = 0;
     private int saveMarginRight = 0;
     private int textViewWidth = 0;
+
+    private int allHeight = 0;
+
+    private void initBackGround(){
+        int fillColor = getResources().getColor(R.color.colorPrimary);
+        GradientDrawable gd = new GradientDrawable();//创建drawable
+        gd.setColor(fillColor);
+        gd.setCornerRadius(allHeight/2f);
+        gd.getPadding(new Rect(0,0,0,0));
+        setBackground(gd);
+    }
 
 
     public void close() {
