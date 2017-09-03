@@ -26,7 +26,6 @@ public class ExpandButtonLayout extends RelativeLayout implements Animation.Anim
 
     private RelativeLayout mRootView;
     private ImageView imageView;
-    private MyTextView textView;
     private MyLinearLayout mLinearLayout;
 
     public ExpandButtonLayout(Context context) {
@@ -48,17 +47,15 @@ public class ExpandButtonLayout extends RelativeLayout implements Animation.Anim
         LayoutInflater.from(context).inflate(R.layout.view_button_expand, this, true);
         mRootView = (RelativeLayout) findViewById(R.id.mRootView);
         imageView = (ImageView) findViewById(R.id.imageView);
-        textView = (MyTextView) findViewById(R.id.textView);
         mLinearLayout = (MyLinearLayout) mRootView.findViewById(R.id.mLinearLayout);
 
-        ViewTreeObserver vto2 = mLinearLayout.getViewTreeObserver();
-        vto2.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        ViewTreeObserver vto = mLinearLayout.getViewTreeObserver();
+        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 allHeight = getHeight();
-                initBackGround();
-                textViewWidth = mLinearLayout.getWidth();
-                Log.e("DEBUG", "Width=" + textViewWidth + ",allHeight=" + allHeight);
+                mLinearLayoutWidth = mLinearLayout.getWidth();
+                Log.e("DEBUG", "Width=" + mLinearLayoutWidth + ",allHeight=" + allHeight);
                 savePaddingLeft = mLinearLayout.getPaddingLeft();
                 savePaddingRight = mLinearLayout.getPaddingRight();
                 ViewGroup.LayoutParams vglp = mLinearLayout.getLayoutParams();
@@ -66,10 +63,10 @@ public class ExpandButtonLayout extends RelativeLayout implements Animation.Anim
                     ViewGroup.MarginLayoutParams marginVglp = (ViewGroup.MarginLayoutParams) vglp;
                     saveMarginLeft = marginVglp.leftMargin;
                     saveMarginRight = marginVglp.rightMargin;
-
                     Log.e("DEBUG", "vglp saveMarginLeft=" + saveMarginLeft + " saveMarginRight=" + saveMarginRight);
                 }
-                textView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                mLinearLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                initBackGround();
             }
         });
     }
@@ -77,18 +74,22 @@ public class ExpandButtonLayout extends RelativeLayout implements Animation.Anim
     private int duration = 1000;
     private boolean isExpand = true;
     private boolean isAnimation = false;
+
     private int savePaddingLeft = 0;
     private int savePaddingRight = 0;
     private int saveMarginLeft = 0;
     private int saveMarginRight = 0;
-    private int textViewWidth = 0;
-
+    private int mLinearLayoutWidth = 0;
     private int allHeight = 0;
 
+    /**
+     * 设置圆角背景
+     */
     private void initBackGround(){
         int fillColor = getResources().getColor(R.color.colorPrimary);
         GradientDrawable gd = new GradientDrawable();//创建drawable
         gd.setColor(fillColor);
+        //圆角半径等于高度的一半,合成之后是一个完整的圆
         gd.setCornerRadius(allHeight/2f);
         gd.getPadding(new Rect(0,0,0,0));
         setBackground(gd);
@@ -109,13 +110,12 @@ public class ExpandButtonLayout extends RelativeLayout implements Animation.Anim
                 ScaleAnimation.RELATIVE_TO_SELF, 0.5f, ScaleAnimation.RELATIVE_TO_SELF, 0.5f);
         animationSet.addAnimation(scaleAnimation);
         imageView.startAnimation(animationSet);
-
         AnimatorSet animatorSet = new AnimatorSet();
-        ObjectAnimator animator1 = ObjectAnimator.ofFloat(mLinearLayout, "width", textViewWidth, 0f);
-        ObjectAnimator animator2 = ObjectAnimator.ofFloat(mLinearLayout, "paddingLeft", savePaddingLeft, 0f);
-        ObjectAnimator animator3 = ObjectAnimator.ofFloat(mLinearLayout, "paddingRight", savePaddingRight, 0f);
-        ObjectAnimator animator4 = ObjectAnimator.ofFloat(mLinearLayout, "marginLeft", saveMarginLeft, 0f);
-        ObjectAnimator animator5 = ObjectAnimator.ofFloat(mLinearLayout, "marginRight", saveMarginRight, 0f);
+        ObjectAnimator animator1 = ObjectAnimator.ofInt(mLinearLayout, "width", mLinearLayoutWidth, 0);
+        ObjectAnimator animator2 = ObjectAnimator.ofInt(mLinearLayout, "paddingLeft", savePaddingLeft, 0);
+        ObjectAnimator animator3 = ObjectAnimator.ofInt(mLinearLayout, "paddingRight", savePaddingRight, 0);
+        ObjectAnimator animator4 = ObjectAnimator.ofInt(mLinearLayout, "marginLeft", saveMarginLeft, 0);
+        ObjectAnimator animator5 = ObjectAnimator.ofInt(mLinearLayout, "marginRight", saveMarginRight, 0);
         animatorSet.playTogether(animator1, animator2, animator3, animator4, animator5);
         animatorSet.setDuration(duration).start();
 
@@ -139,11 +139,11 @@ public class ExpandButtonLayout extends RelativeLayout implements Animation.Anim
 
 
         AnimatorSet animatorSet = new AnimatorSet();
-        ObjectAnimator animator1 = ObjectAnimator.ofFloat(mLinearLayout, "width", 0f, textViewWidth);
-        ObjectAnimator animator2 = ObjectAnimator.ofFloat(mLinearLayout, "paddingLeft", 0f, savePaddingLeft);
-        ObjectAnimator animator3 = ObjectAnimator.ofFloat(mLinearLayout, "paddingRight", 0f, savePaddingRight);
-        ObjectAnimator animator4 = ObjectAnimator.ofFloat(mLinearLayout, "marginLeft", 0f, saveMarginLeft);
-        ObjectAnimator animator5 = ObjectAnimator.ofFloat(mLinearLayout, "marginRight", 0f, saveMarginRight);
+        ObjectAnimator animator1 = ObjectAnimator.ofInt(mLinearLayout, "width", 0, mLinearLayoutWidth);
+        ObjectAnimator animator2 = ObjectAnimator.ofInt(mLinearLayout, "paddingLeft", 0, savePaddingLeft);
+        ObjectAnimator animator3 = ObjectAnimator.ofInt(mLinearLayout, "paddingRight", 0, savePaddingRight);
+        ObjectAnimator animator4 = ObjectAnimator.ofInt(mLinearLayout, "marginLeft", 0, saveMarginLeft);
+        ObjectAnimator animator5 = ObjectAnimator.ofInt(mLinearLayout, "marginRight", 0, saveMarginRight);
         animatorSet.playTogether(animator1, animator2, animator3, animator4, animator5);
         animatorSet.setDuration(duration).start();
 
@@ -162,20 +162,12 @@ public class ExpandButtonLayout extends RelativeLayout implements Animation.Anim
     @Override
     public void onAnimationStart(Animation animation) {
         isAnimation = true;
-//        if(!isExpand){
-//            mRootView.setBackgroundResource(R.drawable.color_primary_rect);
-//        }
     }
 
     @Override
     public void onAnimationEnd(Animation animation) {
         isAnimation = false;
         isExpand = !isExpand;
-//        if(isExpand){
-//            mRootView.setBackgroundResource(R.drawable.color_primary_rect);
-//        }else{
-//            mRootView.setBackground(null);
-//        }
     }
 
     @Override
