@@ -5,5 +5,7 @@
 
 个人并不是很赞同遇到什么效果就直接从零开始写自定义,活学活用才是王道.
 
+<a href="http://blog.csdn.net/viewstub_cn/article/details/77822822" target="_blank">阅读实现步骤解析</a>
+
 # 效果图
 ![效果图](https://github.com/ViewStub/ExpandButton/blob/master/effect/effect.gif)
